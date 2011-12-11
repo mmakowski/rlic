@@ -11,29 +11,32 @@
 </script>
 <script type="text/javascript">
   function initialise() {
-    var centre = new google.maps.LatLng(-34.397, 150.644);
+    var centre = new google.maps.LatLng(37.762, 140.185);
     var mapOptions = {
       zoom: 7,
       center: centre,
       mapTypeId: google.maps.MapTypeId.ROADMAP
     };
     var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
-    var records = loadData();
-    createMarkers(records, map);
+    loadDataAndPutOn(map);
   }
 
-  function loadData() {
-    // TODO
-    return [
-      { "lat": -34.397, 
-        "lng": 150.644,
-        "reading": 1800,
-        "date": "2011-12-11"},
-      { "lat": -33.397, 
-        "lng": 150.644,
-        "reading": 400,
-        "date": "2011-12-13"}
-    ];
+  function loadDataAndPutOn(map) {
+    var xmlhttp = newXmlHttpRequest();
+    xmlhttp.onreadystatechange = function(){
+      if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+        var records = eval(xmlhttp.responseText);
+        createMarkers(records, map);
+      }
+    }
+    xmlhttp.open("GET", "http://mmakowski.com/rlic/data.json", true);
+    xmlhttp.setRequestHeader("Access-Control-Allow-Origin", "*");
+    xmlhttp.send();
+  }
+
+  function newXmlHttpRequest() {
+    if (window.XMLHttpRequest) return new XMLHttpRequest();
+    else return new ActiveXObject("Microsoft.XMLHTTP");
   }
 
   function createMarkers(records, map) {
@@ -41,11 +44,17 @@
       var record = records[i];
       var marker = new google.maps.Marker({
         position: new google.maps.LatLng(record.lat, record.lng),
-        title: record.reading.toString() + "(" + record.date + ")",
-        icon: "shroom.png",
+        title: record.reading.toString() + " (" + record.date + ")",
+        icon: iconFor(record.reading),
         map: map
       });
     }
+  }
+
+  function iconFor(reading) {
+    var bracket = Math.round(reading / 500);
+    if (bracket > 3) bracket = 3;
+    return bracket.toString() + ".png";
   }
 </script>
 </head>
